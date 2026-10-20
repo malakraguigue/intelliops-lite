@@ -1,7 +1,7 @@
 # Changelog
 ## [Non publie]
-## [Non publie]
 
+## [1.0.0] - 2026-10-20
 - Agent Extraction : collecte et normalisation (A)
 - Agent Analyse : filtrage et classification des evenements (B)
 - Agent Notification : canaux, redaction, validation humaine et audit (C)
