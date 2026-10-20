@@ -1,5 +1,8 @@
 # Changelog
 ## [Non publie]
+## [Non publie]
+
+- Agent Extraction : collecte et normalisation (A)
 - Agent Analyse : filtrage et classification des evenements (B)
 ## [0.1.0]
 - Squelette du projet : contrat, agents vides, workflow, demo.
