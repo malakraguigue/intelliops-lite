@@ -22,7 +22,10 @@ class TestExtraction(unittest.TestCase):
 
     def test_masquer_secrets_sans_secret(self):
         self.assertEqual(masquer_secrets("Service demarre"), "Service demarre")
-
+        
+    def test_bearer(self):
+        self.assertEqual(masquer_secrets("Authorization: Bearer eyJ.abc-1"),
+                         "Authorization: Bearer [SECRET]")
     # --- normaliser_log ---
     def test_normaliser_log(self):
         evt = normaliser_log(LIGNE, 42)
