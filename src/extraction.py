@@ -7,6 +7,7 @@ _MOTIF_SECRET = re.compile(
     r"(password|passwd|token|secret|api_key|apikey)(\s*[=:]\s*)[^\s&,;]+",
     re.IGNORECASE,
 )
+_MOTIF_BEARER = re.compile(r"(Bearer\s+)[^\s&,;]+", re.IGNORECASE)
 
 _SEVERITES_LOG = {
     "CRITICAL": "CRITICAL",
@@ -30,7 +31,8 @@ def _verifier_cles(rapport: dict, cles: tuple) -> None:
 
 
 def masquer_secrets(texte: str) -> str:
-    return _MOTIF_SECRET.sub(r"\1\2[SECRET]", texte)
+    texte = _MOTIF_SECRET.sub(r"\1\2[SECRET]", texte)
+    return _MOTIF_BEARER.sub(r"\1[SECRET]", texte)
 
 
 def normaliser_log(ligne: str, numero: int, source: str = "DOCKER",
