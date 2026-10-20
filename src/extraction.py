@@ -7,6 +7,7 @@ _MOTIF_SECRET = re.compile(
     r"(password|passwd|token|secret|api_key|apikey)(\s*[=:]\s*)[^\s&,;]+",
     re.IGNORECASE,
 )
+
 _SEVERITES_LOG = {
     "CRITICAL": "CRITICAL",
     "FATAL": "CRITICAL",
@@ -15,9 +16,18 @@ _SEVERITES_LOG = {
     "WARNING": "MEDIUM",
 }
 
+_SEVERITES_SCAN = ("CRITICAL", "HIGH", "MEDIUM", "LOW")
+
 
 def _identifiant(numero: int) -> str:
     return f"EVT-{numero:05d}"
+
+
+def _verifier_cles(rapport: dict, cles: tuple) -> None:
+    for cle in cles:
+        if cle not in rapport:
+            raise ValueError(f"Cle manquante dans le rapport : {cle}")
+
 
 def masquer_secrets(texte: str) -> str:
     return _MOTIF_SECRET.sub(r"\1\2[SECRET]", texte)
@@ -43,9 +53,33 @@ def normaliser_log(ligne: str, numero: int, source: str = "DOCKER",
 
 def normaliser_scan(rapport: dict, numero: int,
                     environment: str = "production") -> Evenement:
-    raise NotImplementedError
+    _verifier_cles(rapport, ("cve", "package", "severity", "date"))
+    severite = str(rapport["severity"]).upper()
+    if severite not in _SEVERITES_SCAN:
+        severite = "LOW"
+    return Evenement(
+        id=_identifiant(numero),
+        timestamp=rapport["date"],
+        source="TRIVY",
+        component=rapport["package"],
+        environment=environment,
+        event_type="VULNERABILITY",
+        severity=severite,
+        message=f"Vulnerabilite {rapport['cve']} dans {rapport['package']}",
+    )
 
 
 def normaliser_pipeline(rapport: dict, numero: int,
                         environment: str = "production") -> Evenement:
-    raise NotImplementedError
+    _verifier_cles(rapport, ("job", "status", "date"))
+    echec = str(rapport["status"]).lower() == "failed"
+    return Evenement(
+        id=_identifiant(numero),
+        timestamp=rapport["date"],
+        source="CI",
+        component=rapport["job"],
+        environment=environment,
+        event_type="PIPELINE_FAILURE" if echec else "PIPELINE_OK",
+        severity="HIGH" if echec else "LOW",
+        message=f"Pipeline {rapport['job']} : {rapport['status']}",
+    )
